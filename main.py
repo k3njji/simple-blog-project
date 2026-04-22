@@ -14,6 +14,8 @@ from flask_wtf import FlaskForm
 from forms import CreatePostForm, RegisterForm, LoginForm, AddComment
 import os
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 load_dotenv()
 
@@ -31,6 +33,15 @@ This will install the packages from the requirements.txt for this project.
 '''
 
 app = Flask(__name__)
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '0'  # modern browsers ignore this anyway
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; img-src * data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    return response
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
@@ -53,10 +64,23 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
+# database_url = 'sqlite:///C:/Projects/Blogs/instance/posts.db'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+
+def user_or_ip():
+    if current_user.is_authenticated:
+        return str(current_user.id)
+    return get_remote_address()
+
+limiter = Limiter(
+    user_or_ip,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 
 # CONFIGURE TABLES
@@ -108,6 +132,7 @@ with app.app_context():
 
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("3 per minute")
 def register():
     form = RegisterForm()
     if not current_user.is_authenticated:
@@ -143,6 +168,7 @@ def register():
 
 # TODO: Retrieve a user from the database based on their email. 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit('5 per minute')
 def login():
     form = LoginForm()
     if not current_user.is_authenticated:
@@ -190,6 +216,7 @@ def show_post(post_id):
 
 # TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
+@limiter.limit("5 per hour")
 def add_new_post():
     if current_user.is_authenticated:
         form = CreatePostForm()
@@ -211,6 +238,7 @@ def add_new_post():
         abort(403)
 
 @app.route('/new-comment/<int:post_id>', methods=['POST'])
+@limiter.limit("10 per minute")
 def add_comment(post_id):
     if request.method == 'POST':
         post = db.get_or_404(BlogPost, post_id)
