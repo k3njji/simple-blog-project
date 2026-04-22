@@ -26,3 +26,4 @@ python-dotenv
 psycopg2-binary
 email-validator
 bleach
+flask-limiter
