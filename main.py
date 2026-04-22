@@ -63,6 +63,8 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
+print("DATABASE_URL:", os.environ.get("DATABASE_URL"))
+
 # database_url = 'sqlite:///C:/Projects/Blogs/instance/posts.db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
