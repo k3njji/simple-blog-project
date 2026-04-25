@@ -41,13 +41,13 @@ def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
     response.headers['Referrer-Policy'] = 'no-referrer'
     response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
-    response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; "
-        "img-src 'self' data: blob:; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "font-src 'self' https: data:;"
-    )
+    # response.headers['Content-Security-Policy'] = (
+    #     "default-src 'self'; "
+    #     "img-src 'self' data: blob:; "
+    #     "script-src 'self' 'unsafe-inline'; "
+    #     "style-src 'self' 'unsafe-inline'; "
+    #     "font-src 'self' https: data:;"
+    # )
     return response
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 ckeditor = CKEditor(app)
