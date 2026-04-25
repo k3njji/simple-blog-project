@@ -70,8 +70,6 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
-print("DATABASE_URL:", os.environ.get("DATABASE_URL"))
-
 # database_url = 'sqlite:///C:/Projects/Blogs/instance/posts.db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -208,10 +206,21 @@ def logout():
 
 @app.route('/')
 def get_all_posts():
-    result = db.session.execute(db.select(BlogPost))
-    posts = result.scalars().all()
-    print(posts)   # <-- add this
-    return render_template("index.html", all_posts=posts)
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    pagination = db.paginate(
+        db.select(BlogPost).order_by(BlogPost.date.desc()),
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    # result = db.session.execute(db.select(BlogPost))
+    posts = pagination.items
+    # print(posts)   # <-- add this
+    return render_template("index.html", all_posts=posts, pagination=pagination)
 
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>")

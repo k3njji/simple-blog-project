@@ -43,6 +43,54 @@
       <!-- Divider-->
       <hr class="my-4" />
       {% endfor %}
+<!-- Pagination (PUT IT HERE) -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+
+    {% if pagination.has_prev %}
+    <li class="page-item">
+      <a class="page-link" href="{{ url_for('get_all_posts', page=pagination.prev_num) }}">
+        ← Previous
+      </a>
+    </li>
+    {% endif %}
+
+    {% for page_num in pagination.iter_pages(
+          left_edge=1,
+          right_edge=1,
+          left_current=1,
+          right_current=2
+        )
+    %}
+      {% if page_num %}
+        {% if page_num == pagination.page %}
+          <li class="page-item active">
+            <span class="page-link">{{ page_num }}</span>
+          </li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('get_all_posts', page=page_num) }}">
+              {{ page_num }}
+            </a>
+          </li>
+        {% endif %}
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">…</span>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="{{ url_for('get_all_posts', page=pagination.next_num) }}">
+        Next →
+      </a>
+    </li>
+    {% endif %}
+
+  </ul>
+</nav>
       
       {% if current_user.is_authenticated %}
       <!-- New Post -->
