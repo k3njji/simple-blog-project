@@ -43,9 +43,10 @@ def add_security_headers(response):
     response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
-        "img-src 'self' data:; "
-        "script-src 'self'; "
-        "style-src 'self';"
+        "img-src 'self' data: blob:; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "font-src 'self' https: data:;"
     )
     return response
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
