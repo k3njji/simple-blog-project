@@ -1,9 +1,7 @@
 ﻿# simple-blog-project
 
- Add rate limiting
  Add XSS protection (sanitize inputs)
  Add role-based access (admin/user)
- Add pagination for posts
  Create API layer (JSON endpoints)
  Add basic tests (pytest)
  Refactor project structure (separate files)
